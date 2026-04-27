@@ -1,4 +1,4 @@
-# LinkedIn Profiles Scraper & Enrichment (Email, Phone, Address) for Event Exhibitors + Personalized Outreach Email Sender System
+# LinkedIn Profiles Scraper & Enrichment for Event Exhibitors + Personalized Outreach Email Sender System using n8n and Apify
 
 ![n8n](https://img.shields.io/badge/Workflow-n8n-FF6C37?style=flat&logo=n8n&logoColor=white)
 ![Python](https://img.shields.io/badge/Logic-Python-3776AB?style=flat&logo=python&logoColor=white)
