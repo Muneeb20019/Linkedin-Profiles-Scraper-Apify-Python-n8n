@@ -36,6 +36,9 @@ This workflow functions as an **Autonomous Outreach Agent**. It eliminates manua
 ### 1. 🕸️ Dynamic Extraction (Python + Playwright)
 The system uses an asynchronous **Playwright** browser instance. This logic mimics human behavior—waiting for network idle states and rendering JavaScript—to successfully extract unique exhibitor IDs and profile data from the event portal.
 
+**Scraper logic in action:**
+![Apify Scraper Result](https://github.com/Muneeb20019/Linkedin-Profiles-Scraper-Apify-Python-n8n/blob/main/Phyton%20Apify.png?raw=true)
+
 ### 2. 🤖 Signal-Based Personalization (Gemini AI)
 The workflow integrates **Gemini 1.5 Flash**. I engineered a prompt that extracts "Signals" from technical product categories to generate a 20-word curiosity-based "hook." This ensures the email feels like it was written by a human expert and is based specifically on the unique products the company is showcasing at the event.
 
@@ -49,6 +52,8 @@ To maintain a professional, production-ready database, I implemented a **Custom 
 
 ## ✨ Final Result (Google Sheets)
 The final output is a clean, actionable database showing Names, Websites, LinkedIn URLs, Phone Numbers, and high-quality Personalized First Lines ready for an automated email campaign.
+
+![Final Google Sheet Result](https://github.com/Muneeb20019/Linkedin-Profiles-Scraper-Apify-Python-n8n/blob/main/Final%20Result.png?raw=true)
 
 ---
 
