@@ -1,0 +1,899 @@
+{
+  "name": "Exhibator list scrapper",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        144,
+        -80
+      ],
+      "id": "d31dcdef-1dcc-4963-94a1-b7b8c9b02d98",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "operation": "Run actor and get dataset",
+        "actorId": {
+          "__rl": true,
+          "value": "BZFrcLjUqJxI95Wiu",
+          "mode": "list",
+          "cachedResultName": "My Actor (sleek_xenophyte/my-actor)",
+          "cachedResultUrl": "https://console.apify.com/actors/BZFrcLjUqJxI95Wiu/input"
+        },
+        "customBody": "={\n  \"start_urls\": [\n    {\n      \"url\": \"https://camx2026.mapyourshow.com/8_0/explore/exhibitor-gallery.cfm?featured=false\"\n    }\n  ]\n}",
+        "authentication": "apifyOAuth2Api"
+      },
+      "type": "@apify/n8n-nodes-apify.apify",
+      "typeVersion": 1,
+      "position": [
+        336,
+        -80
+      ],
+      "id": "13d8a7ff-a7a1-4163-8166-69a740ca7a05",
+      "name": "Run an Actor and get dataset",
+      "credentials": {
+        "apifyOAuth2Api": {
+          "id": "ThkmWlC8amScKe39",
+          "name": "Apify account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "7a45e0fd-314b-41b3-851e-fd43d297d4ab",
+              "leftValue": "={{ $json.Linkedin_url }}",
+              "rightValue": "N/A",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        512,
+        -80
+      ],
+      "id": "16712c3c-76a2-49cf-a9e6-1d05f60c9e9b",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a GTM Sales Expert. I have this company:\nCompany: {{ $json.Company_name }}\nWebsite: {{ $json.Company_website }}\nNiche/Categories: {{ $json.Product_Categories }}\nTask: Write a personalized first line for a cold email.\nRules:\nMention a specific technical signal found in their niche: '{{ $json.Product_Categories }}'.\nStructure: 'Noticed you are highlighting [Specific Tech] at CAMX—curious how you're positioning these for manufacturers looking to [Relevant Industry Benefit]?'\nDO NOT use generic compliments.\nLENGTH: Max 25 words.\nOutput ONLY the first line text.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        720,
+        -368
+      ],
+      "id": "af1e6e12-40fc-48df-a7ed-c3fbde1d3d8f",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "deepseek/deepseek-chat",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        704,
+        -224
+      ],
+      "id": "c0651157-5626-4bcd-8830-3b9742325255",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "dWJbvtSgfIHCQR9g",
+          "name": "OpenRouter account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop through every item coming from the AI node\nfor (const item of $input.all()) {\n  \n  // 1. Grab the raw text\n  let rawText = item.json.output || \"\";\n\n  // 2. Create the clean line (remove word counts and quotes)\n  let cleanLine = rawText.split('\\n')[0].replace(/\"/g, '').trim();\n\n  // 3. Save the final clean text into a new field\n  item.json.Personalized_Line = cleanLine;\n\n  // 4. DELETE the unnecessary raw data so the output is clean\n  delete item.json.output; \n}\n\n// Return only the clean items\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1024,
+        -368
+      ],
+      "id": "964fa75f-edcf-4203-9f52-4b34f355e55a",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1QM7bYlcth2e2RMzmisUvn2FD87XDQbj9lY2Xnelad3o",
+          "mode": "list",
+          "cachedResultName": "website scrapper",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1QM7bYlcth2e2RMzmisUvn2FD87XDQbj9lY2Xnelad3o/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1QM7bYlcth2e2RMzmisUvn2FD87XDQbj9lY2Xnelad3o/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Company Name": "={{ $json.Company_name }}",
+            "Website": "={{ $json.Company_website }}",
+            "LinkedIn": "={{ $json.Linkedin_url }}",
+            "Phone": "={{ \"'\" + $json.Contact_phone }}",
+            "Personalized First Line": "={{ $json.Personalized_Line }}",
+            "\nProduct Categories": "={{ $json.Product_Categories }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Company Name",
+              "displayName": "Company Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Website",
+              "displayName": "Website",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "LinkedIn",
+              "displayName": "LinkedIn",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Personalized First Line",
+              "displayName": "Personalized First Line",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "\nProduct Categories",
+              "displayName": "\nProduct Categories",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1296,
+        -112
+      ],
+      "id": "fb99a7da-26d2-4344-9648-b62fe5e143db",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "VKVRpG7ISiD2GZuQ",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1104,
+        -112
+      ],
+      "id": "075d27d3-5397-4ce8-baed-2af9c0440fb3",
+      "name": "Merge"
+    }
+  ],
+  "pinData": {
+    "Run an Actor and get dataset": [
+      {
+        "json": {
+          "Company_name": "Eastman Machine Company",
+          "Company_website": "https://www.eastmancuts.com/",
+          "Contact_phone": "+1 (716) 856-2200",
+          "Linkedin_url": "https://www.linkedin.com/company/eastman-machine-company",
+          "Product_Categories": ", Product Categories Cutting Equipment Manufacturing Process Development, Cutting Equipment"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "Company_name": "3A Composites Core Materials / Baltek Inc.",
+          "Company_website": "https://www.3accorematerials.com/",
+          "Contact_phone": "+1 (914) 584-8794",
+          "Linkedin_url": "https://www.linkedin.com/company/972720/",
+          "Product_Categories": ", Product Categories Core Materials Foams Testing Laboratory, Core Materials"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "Company_name": "3M Transportation & Energy Business",
+          "Company_website": "https://www.3m.com/",
+          "Contact_phone": "+1 (800) 362-3550",
+          "Linkedin_url": "N/A",
+          "Product_Categories": ", Product Categories Aerospace Education/Training Thermoplastics, Aerospace"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "Company_name": "A&P Technology",
+          "Company_website": "https://www.braider.com/",
+          "Contact_phone": "+1 (513) 688-3200",
+          "Linkedin_url": "https://www.linkedin.com/company/a&p-technology-inc.",
+          "Product_Categories": ", Product Categories Fabrics Preforms Reinforcements Thermoplastics, Fabrics"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "Company_name": "A+ Composites GmbH",
+          "Company_website": "http://aplus-composites.de/en",
+          "Contact_phone": "+1 (633) 399-9906",
+          "Linkedin_url": "http://linkedin.com/company/aplus-composites",
+          "Product_Categories": ", Product Categories Automated Fiber Placement Carbon Fiber Systems Material Research and Development Prepregs Thermoplastics, Automated Fiber Placement"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "Company_name": "A.B. Carter, Inc.",
+          "Company_website": "http://www.abcarter.com/",
+          "Contact_phone": "+1 (704) 865-1201",
+          "Linkedin_url": "https://www.linkedin.com/company/a.b.-carter-inc.",
+          "Product_Categories": ", Product Categories Filament Winding Equipment Process Control Testing Equipment Tools and Tooling Equipment, Filament Winding Equipment"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "Company_name": "A.P.C.M. Manufacturing LLC",
+          "Company_website": "http://www.prepregs.com/",
+          "Contact_phone": "+1 (860) 564-7817",
+          "Linkedin_url": "https://www.linkedin.com/in/david-l-young-88219a20/",
+          "Product_Categories": ", Product Categories Carbon Fiber Systems Out-of-Autoclave (OOA) Prepregs Tooling, Mold and Plugs, Carbon Fiber Systems"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "Company_name": "Aalchem",
+          "Company_website": "http://www.aalchem.com/",
+          "Contact_phone": "+1 (616) 247-9851",
+          "Linkedin_url": "https://www.linkedin.com/company/aalchem/",
+          "Product_Categories": ", Product Categories Cure Initiators/Catalysts, Cure Initiators/Catalysts"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "Company_name": "Abaris Training Resources Inc",
+          "Company_website": "https://www.abaris.com/",
+          "Contact_phone": "+1 (971) 261-2053",
+          "Linkedin_url": "https://www.linkedin.com/company/abaris-training/",
+          "Product_Categories": ", Product Categories Aerospace Consulting Services Education/Training Out-of-Autoclave (OOA) Repair, Aerospace"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "Company_name": "Abrasive Technology",
+          "Company_website": "http://www.abrasive-tech.com/",
+          "Contact_phone": "+1 (740) 548-4100",
+          "Linkedin_url": "http://linkedin.com/company/abrasive-technology",
+          "Product_Categories": ", Product Categories Aerospace Cutting Equipment Fabricating Supplies MRO - Maintenance, Repair, Operations, Aerospace"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "Company_name": "ACE Awards",
+          "Company_website": "N/A",
+          "Contact_phone": "N/A",
+          "Linkedin_url": "https://www.linkedin.com/company/ace-awards",
+          "Product_Categories": ""
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "Company_name": "ACMA, American Composites Manufacturers Association",
+          "Company_website": "https://acmanet.org/",
+          "Contact_phone": "+1 (703) 525-0511",
+          "Linkedin_url": "https://www.linkedin.com/company/american-composites-manufacturers-association",
+          "Product_Categories": ", Aerospace"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "Company_name": "ACXYS TECHNOLOGIES | Plasma Bound",
+          "Company_website": "https://www.acxys.com/",
+          "Contact_phone": "N/A",
+          "Linkedin_url": "https://www.linkedin.com/company/acxys-technologies",
+          "Product_Categories": ", Product Categories Assembly/Bonding Equipment Manufacturing Process Development Material Research and Development, Assembly/Bonding Equipment"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "Company_name": "Additive Engineering Solutions",
+          "Company_website": "https://www.additiveeng.com/",
+          "Contact_phone": "+1 (800) 210-9801",
+          "Linkedin_url": "https://www.linkedin.com/company/additive-engineering-solutions/",
+          "Product_Categories": ", Product Categories Additive Manufacturing Aerospace Thermoplastics Tooling, Mold and Plugs, Additive Manufacturing"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "Company_name": "Aditya Birla Advanced Materials",
+          "Company_website": "http://abg-am.com/",
+          "Contact_phone": "+1 (706) 279-4114",
+          "Linkedin_url": "N/A",
+          "Product_Categories": ", Product Categories Aerospace Electrical/Electronic Prepregs Resin and/or Gel Coat, Aerospace"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "Company_name": "Advanced Composites, Inc.",
+          "Company_website": "https://www.advancedcomposites.com/",
+          "Contact_phone": "+1 (801) 467-1204",
+          "Linkedin_url": "N/A",
+          "Product_Categories": ", Design Product Development Services"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "Company_name": "Airtech International",
+          "Company_website": "http://www.airtech.com/",
+          "Contact_phone": "+1 (714) 899-8100",
+          "Linkedin_url": "https://www.linkedin.com/company/airtech-advanced-materials-group",
+          "Product_Categories": ", Product Categories Additive Manufacturing Fabricating Supplies, Additive Manufacturing"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "Company_name": "Akar Makina San. ve Tic. A.S",
+          "Company_website": "http://www.akarmak.com/",
+          "Contact_phone": "N/A",
+          "Linkedin_url": "https://www.linkedin.com/company/akar-makina-a-%C5%9F-/",
+          "Product_Categories": ""
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "Company_name": "AKPA Kimya Ambalaj Sanayi ve Ticaret A.S.",
+          "Company_website": "http://www.akpakimya.com/",
+          "Contact_phone": "N/A",
+          "Linkedin_url": "N/A",
+          "Product_Categories": ", Product Categories Filament Winding Equipment Glass Fibers Resin Transfer Molding, Filament Winding Equipment"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "Company_name": "Albany Engineered Composites",
+          "Company_website": "http://www.albint.com/aec",
+          "Contact_phone": "+1 (603) 330-5800",
+          "Linkedin_url": "N/A",
+          "Product_Categories": ", Product Categories Automated Fiber Placement Out-of-Autoclave (OOA) Resin Transfer Molding, Automated Fiber Placement"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "Company_name": "Aligned Vision",
+          "Company_website": "https://aligned-vision.com/",
+          "Contact_phone": "+1 (978) 244-1166",
+          "Linkedin_url": "https://www.linkedin.com/company/aligned-vision",
+          "Product_Categories": ", Product Categories Aerospace Laser Projection Manufacturing Process Development Process Control, Aerospace"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "Company_name": "Allied UV",
+          "Company_website": "https://www.alliedphotochemical.com/",
+          "Contact_phone": "+1 (586) 232-3637",
+          "Linkedin_url": "https://www.linkedin.com/company/allied-photochemical-inc-/",
+          "Product_Categories": ""
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "Company_name": "allnex",
+          "Company_website": "https://allnex.com/en",
+          "Contact_phone": "+1 (770) 280-8366",
+          "Linkedin_url": "https://www.linkedin.com/company/allnex/mycompany/",
+          "Product_Categories": ", Product Categories Additive Manufacturing Infrared Curing Systems Resin and/or Gel Coat, Additive Manufacturing"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "Company_name": "ALTA Performance Materials",
+          "Company_website": "https://altapm.com/",
+          "Contact_phone": "+1 (614) 749-6365",
+          "Linkedin_url": "https://www.linkedin.com/company/altaperformancematerials/",
+          "Product_Categories": ", Product Categories Resin and/or Gel Coat Testing Laboratory, Resin and/or Gel Coat"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "Company_name": "Alum-a-Lift",
+          "Company_website": "http://alum-a-lift.com/",
+          "Contact_phone": "+1 (770) 489-0328",
+          "Linkedin_url": "https://www.linkedin.com/company/alum-a-lift-inc-/",
+          "Product_Categories": ", Product Categories Aerospace Automation Equipment Manufacturing Process Development Safety Equipment and Supplies Testing Equipment, Aerospace"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "Company_name": "AlzChem LLC",
+          "Company_website": "http://www.alzchem.com/",
+          "Contact_phone": "+1 (770) 910-7719",
+          "Linkedin_url": "https://www.linkedin.com/company/alzchem-ag",
+          "Product_Categories": ", Product Categories Aerospace Cure Initiators/Catalysts, Aerospace"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "Company_name": "American Colors Inc.",
+          "Company_website": "http://www.americancolors.com/",
+          "Contact_phone": "+1 (419) 621-4000",
+          "Linkedin_url": "https://www.linkedin.com/company/american-colors-inc/",
+          "Product_Categories": ", Product Categories Manufacturing Process Development, Manufacturing Process Development"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "Company_name": "American DORNIER Machinery Corporation",
+          "Company_website": "https://www.lindauerdornier.com/en/",
+          "Contact_phone": "+1 704 697-3310",
+          "Linkedin_url": "https://www.linkedin.com/company/lindauer-dornier-gmbh",
+          "Product_Categories": ", Product Categories Aerospace Automated Fiber Placement Consulting Services Fabrics Glass Fibers Manufacturing Process Development Sporting Equipment, Aerospace"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "Company_name": "American GFM Corporation",
+          "Company_website": "https://www.agfm.com/",
+          "Contact_phone": "+1 (757) 487-2442",
+          "Linkedin_url": "N/A",
+          "Product_Categories": ", Product Categories Cutting Equipment Repair, Cutting Equipment"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "Company_name": "ANDRITZ Schuler Inc.",
+          "Company_website": "https://www.schulergroup.com/major/us/unternehmen/index.php",
+          "Contact_phone": "+1 (734) 207-7200",
+          "Linkedin_url": "https://www.linkedin.com/company/schulernorthamerica/",
+          "Product_Categories": ", Product Categories Aerospace MRO - Maintenance, Repair, Operations Presses/Compression Repair, Hydraulic presses for fiber-reinforced plastics with accumulator drives provide efficient energy usage and short pressure build-up times., Aerospace"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ],
+    "AI Agent": [
+      {
+        "json": {
+          "output": "\"Noticed you’re showcasing advanced nesting software at CAMX—curious how you’re positioning these for manufacturers aiming to reduce material waste in composite cutting?\""
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "output": "\"Noticed you’re showcasing advanced foam core testing at CAMX—curious how you’re positioning these for manufacturers needing lightweight, high-strength solutions in aerospace/composites?\""
+        },
+        "pairedItem": {
+          "item": 1
+        }
+      },
+      {
+        "json": {
+          "output": "\"Noticed you’re showcasing thermoplastic preforms at CAMX—curious how you’re positioning these for manufacturers aiming to reduce cycle times in high-volume composites production?\""
+        },
+        "pairedItem": {
+          "item": 2
+        }
+      },
+      {
+        "json": {
+          "output": "\"Noticed your focus on Automated Fiber Placement at CAMX—curious how you’re positioning these systems for manufacturers aiming to reduce cycle times in aerospace composites?\""
+        },
+        "pairedItem": {
+          "item": 3
+        }
+      },
+      {
+        "json": {
+          "output": "\"Noticed your advanced filament winding process control systems—curious how you're positioning these for manufacturers looking to optimize precision and reduce waste in composite production?\"  \n\n(24 words)"
+        },
+        "pairedItem": {
+          "item": 4
+        }
+      },
+      {
+        "json": {
+          "output": "\"Noticed you’re showcasing Out-of-Autoclave (OOA) prepregs at CAMX—curious how you’re positioning these for manufacturers aiming to reduce cycle times without sacrificing composite performance?\"  \n\n(24 words)"
+        },
+        "pairedItem": {
+          "item": 5
+        }
+      },
+      {
+        "json": {
+          "output": "\"Noticed you specialize in cure initiators/catalysts—curious how you're positioning these for manufacturers looking to optimize curing efficiency and performance in advanced composites?\""
+        },
+        "pairedItem": {
+          "item": 6
+        }
+      },
+      {
+        "json": {
+          "output": "\"Noticed your expertise in Out-of-Autoclave (OOA) repair at CAMX—curious how you're positioning these solutions for aerospace manufacturers looking to reduce downtime and extend composite lifespan?\"  \n\n(24 words)"
+        },
+        "pairedItem": {
+          "item": 7
+        }
+      },
+      {
+        "json": {
+          "output": "\"Noticed you’re showcasing advanced CBN abrasives at CAMX—curious how you’re positioning these for aerospace manufacturers needing longer tool life in high-temp alloys?\""
+        },
+        "pairedItem": {
+          "item": 8
+        }
+      },
+      {
+        "json": {
+          "output": "\"Noticed you’re showcasing advanced composite innovations at CAMX—curious how you’re positioning these for manufacturers aiming to reduce weight without sacrificing durability?\"  \n\n(24 words)"
+        },
+        "pairedItem": {
+          "item": 9
+        }
+      },
+      {
+        "json": {
+          "output": "\"Noticed you’re showcasing advanced thermoset composites at CAMX—curious how you’re positioning these for aerospace manufacturers aiming to reduce weight without compromising structural integrity?\""
+        },
+        "pairedItem": {
+          "item": 10
+        }
+      },
+      {
+        "json": {
+          "output": "\"Noticed your focus on plasma bonding for high-precision assembly—curious how you're optimizing this for manufacturers needing faster cycle times without compromising joint integrity?\""
+        },
+        "pairedItem": {
+          "item": 11
+        }
+      },
+      {
+        "json": {
+          "output": "\"Noticed you’re advancing aerospace thermoplastics at CAMX—curious how you’re positioning these for manufacturers needing faster, lighter tooling solutions?\""
+        },
+        "pairedItem": {
+          "item": 12
+        }
+      },
+      {
+        "json": {
+          "output": "\"Noticed you’re showcasing additive manufacturing fabricating supplies at CAMX—curious how you’re positioning these for manufacturers looking to streamline prototyping and production?\""
+        },
+        "pairedItem": {
+          "item": 13
+        }
+      },
+      {
+        "json": {
+          "output": "\"Noticed you’re showcasing CNC automation at CAMX—curious how you’re positioning these for manufacturers aiming to boost precision in aerospace component production?\""
+        },
+        "pairedItem": {
+          "item": 14
+        }
+      },
+      {
+        "json": {
+          "output": "\"Noticed you’re leveraging laser projection for aerospace manufacturing—curious how you’re positioning this for manufacturers aiming to reduce assembly errors and streamline process control?\""
+        },
+        "pairedItem": {
+          "item": 15
+        }
+      },
+      {
+        "json": {
+          "output": "\"Noticed your advanced UV curing solutions at CAMX—curious how you're positioning these for manufacturers looking to accelerate production without compromising coating durability?\"  \n\n(24 words)"
+        },
+        "pairedItem": {
+          "item": 16
+        }
+      },
+      {
+        "json": {
+          "output": "\"Noticed you’re advancing Infrared Curing Systems for additive manufacturing—curious how you’re positioning these for manufacturers looking to accelerate resin curing without compromising material integrity?\"  \n\n(24 words)"
+        },
+        "pairedItem": {
+          "item": 17
+        }
+      },
+      {
+        "json": {
+          "output": "\"Noticed you’re showcasing advanced resin testing at CAMX—curious how you’re helping manufacturers optimize cure times for high-volume composite production?\""
+        },
+        "pairedItem": {
+          "item": 18
+        }
+      },
+      {
+        "json": {
+          "output": "\"Noticed you’re showcasing automated composite handling at CAMX—curious how you’re positioning these for aerospace manufacturers aiming to reduce cycle times and improve layup precision?\""
+        },
+        "pairedItem": {
+          "item": 19
+        }
+      },
+      {
+        "json": {
+          "output": "\"Noticed you’re highlighting aerospace cure initiators at CAMX—curious how you’re positioning these for manufacturers looking to optimize composite curing cycles?\""
+        },
+        "pairedItem": {
+          "item": 20
+        }
+      },
+      {
+        "json": {
+          "output": "\"Noticed you’re advancing manufacturing process development—curious how you’re positioning your color solutions for manufacturers looking to streamline production and enhance material performance?\""
+        },
+        "pairedItem": {
+          "item": 21
+        }
+      },
+      {
+        "json": {
+          "output": "\"Noticed you’re advancing Automated Fiber Placement at CAMX—curious how you’re optimizing this for aerospace manufacturers aiming to reduce cycle times and material waste?\""
+        },
+        "pairedItem": {
+          "item": 22
+        }
+      },
+      {
+        "json": {
+          "output": "\"Noticed you’re showcasing hydraulic presses with accumulator drives at CAMX—curious how you’re positioning these for aerospace MROs aiming to cut energy costs and boost throughput?\""
+        },
+        "pairedItem": {
+          "item": 23
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Run an Actor and get dataset",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run an Actor and get dataset": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "068a3bdc-5d39-46f3-bccd-aa95c8717850",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5fab4eb66d8dd897d5d18deaa835e9245500a47fa79236319c5a69014fb52c49"
+  },
+  "id": "5SUzJlBza54nCso5",
+  "tags": []
+}
